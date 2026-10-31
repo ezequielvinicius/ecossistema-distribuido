@@ -3,209 +3,299 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ecossistema Distribuído | Monitoramento LSPA - IBGE</title>
-    <!-- Google Fonts -->
+    <title>Cluster Console | Ecossistema Distribuído LSPA - IBGE</title>
+    <!-- Fontes Técnicas e Corporativas -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-    <!-- Chart.js para visualização analítica -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="/static/style.css">
 </head>
-<body>
-    <div class="app-container">
-        <!-- Header da Aplicação -->
-        <header class="navbar">
-            <div class="brand">
-                <div class="logo-icon">🌱</div>
-                <div class="brand-text">
-                    <h1>Ecossistema Distribuído</h1>
-                    <p class="subtitle">Processamento de Safras Agrícolas & Métricas ESG (LSPA / SIDRA - IBGE)</p>
+<body class="theme-dark">
+    <div class="layout-wrapper">
+        <!-- Sidebar Corporativa -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="system-logo">
+                    <span class="logo-mark">LSPA</span>
+                    <span class="logo-sub">DISTRIBUTED</span>
                 </div>
             </div>
-            <div class="header-actions">
-                <div class="status-badge" id="broker-badge">
-                    <span class="status-dot"></span>
-                    <span id="broker-status-text">RabbitMQ: Conectando...</span>
-                </div>
-                <button class="btn btn-primary" id="btn-dispatch">
-                    <span class="btn-icon">⚡</span> Iniciar Processamento Distribuído
+
+            <nav class="sidebar-nav">
+                <div class="nav-group-label">MONITORAMENTO</div>
+                <button class="nav-item active" data-tab="tab-overview">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                    <span>Visão Geral</span>
                 </button>
-                <button class="btn btn-secondary" id="btn-reset">
-                    <span class="btn-icon">🔄</span> Reset
+                <button class="nav-item" data-tab="tab-topology">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="3"></circle><circle cx="5" cy="19" r="3"></circle><circle cx="19" cy="19" r="3"></circle><path d="M5 19l7-11 7 11"></path></svg>
+                    <span>Topologia de Nós</span>
                 </button>
-            </div>
-        </header>
+                <button class="nav-item" data-tab="tab-audit">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                    <span>Auditoria de Threads</span>
+                </button>
 
-        <!-- Topologia Distribuída Visual -->
-        <section class="topology-section">
-            <div class="section-header">
-                <h2>Topologia do Cluster Distribuído</h2>
-                <span class="badge-role">Docker Compose Topology</span>
-            </div>
-            <div class="topology-grid">
-                <!-- Nó Manager -->
-                <div class="node-card node-manager">
-                    <div class="node-icon">🧠</div>
-                    <div class="node-info">
-                        <span class="node-type">NÓ COORDENADOR</span>
-                        <h3 class="node-name">Manager Node</h3>
-                        <p class="node-desc">FastAPI • Ingestão SIDRA • Particionador de Carga</p>
-                    </div>
-                    <div class="node-metric">
-                        <span class="metric-label">Uptime</span>
-                        <span class="metric-val" id="uptime-val">0s</span>
-                    </div>
-                </div>
+                <div class="nav-group-label">OPERAÇÕES</div>
+                <button class="nav-item" data-tab="tab-logs">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line></svg>
+                    <span>Console de Eventos</span>
+                </button>
+                <button class="nav-item" data-tab="tab-esg">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
+                    <span>Relatório ESG</span>
+                </button>
+            </nav>
 
-                <!-- Broker RabbitMQ -->
-                <div class="node-card node-broker">
-                    <div class="node-icon">📬</div>
-                    <div class="node-info">
-                        <span class="node-type">MESSAGE BROKER</span>
-                        <h3 class="node-name">RabbitMQ AMQP</h3>
-                        <p class="node-desc">Fila: agro_tasks_queue & agro_results_queue</p>
-                    </div>
-                    <div class="node-metric">
-                        <span class="metric-label">Protocolo</span>
-                        <span class="metric-val">AMQP 0-9-1</span>
-                    </div>
-                </div>
-
-                <!-- Nó Worker Alpha -->
-                <div class="node-card node-worker" id="card-worker-alpha">
-                    <div class="node-icon">⚙️</div>
-                    <div class="node-info">
-                        <span class="node-type">NÓ DE PROCESSAMENTO 1</span>
-                        <h3 class="node-name">Worker Alpha</h3>
-                        <p class="node-desc">Pool Multithread • Cálculo ESG & Produtividade</p>
-                    </div>
-                    <div class="node-metric">
-                        <span class="metric-label">Jobs Processados</span>
-                        <span class="metric-val" id="worker-alpha-jobs">0</span>
-                    </div>
-                </div>
-
-                <!-- Nó Worker Beta -->
-                <div class="node-card node-worker" id="card-worker-beta">
-                    <div class="node-icon">⚙️</div>
-                    <div class="node-info">
-                        <span class="node-type">NÓ DE PROCESSAMENTO 2</span>
-                        <h3 class="node-name">Worker Beta</h3>
-                        <p class="node-desc">Pool Multithread • Cálculo ESG & Produtividade</p>
-                    </div>
-                    <div class="node-metric">
-                        <span class="metric-label">Jobs Processados</span>
-                        <span class="metric-val" id="worker-beta-jobs">0</span>
+            <div class="sidebar-footer">
+                <div class="connection-indicator">
+                    <span class="pulse-indicator" id="broker-indicator"></span>
+                    <div class="indicator-meta">
+                        <span class="indicator-title">AMQP BROKER</span>
+                        <span class="indicator-desc" id="broker-status-text">RabbitMQ: 5672</span>
                     </div>
                 </div>
             </div>
-        </section>
+        </aside>
 
-        <!-- Métricas Rápidas (KPIs) -->
-        <section class="kpi-strip">
-            <div class="kpi-box">
-                <span class="kpi-title">Fonte de Dados</span>
-                <span class="kpi-number" style="font-size: 1.15rem; color: #10b981;">IBGE SIDRA (Tabela 6588)</span>
-                <span class="kpi-sub">LSPA - Estimativa Oficial</span>
-            </div>
-            <div class="kpi-box">
-                <span class="kpi-title">Tarefas Despachadas</span>
-                <span class="kpi-number" id="kpi-dispatched">0</span>
-                <span class="kpi-sub">Culturas Particionadas</span>
-            </div>
-            <div class="kpi-box">
-                <span class="kpi-title">Tarefas Concluídas</span>
-                <span class="kpi-number" id="kpi-completed">0</span>
-                <span class="kpi-sub" id="kpi-progress">Progresso: 0%</span>
-            </div>
-            <div class="kpi-box">
-                <span class="kpi-title">Paralelismo Interno</span>
-                <span class="kpi-number" style="color: #6366f1;">ThreadPool (4x)</span>
-                <span class="kpi-sub">Multithreading por Worker</span>
-            </div>
-            <div class="kpi-box">
-                <span class="kpi-title">Score ESG Geral</span>
-                <span class="kpi-number" id="kpi-esg" style="color: #3b82f6;">--</span>
-                <span class="kpi-sub">Intensificação Sustentável</span>
-            </div>
-        </section>
+        <!-- Conteúdo Principal -->
+        <div class="main-content">
+            <!-- Barra Superior de Controle -->
+            <header class="topbar">
+                <div class="breadcrumb">
+                    <span class="breadcrumb-item">Cluster LSPA</span>
+                    <span class="breadcrumb-separator">/</span>
+                    <span class="breadcrumb-item active" id="active-tab-title">Visão Geral</span>
+                </div>
 
-        <!-- Área Principal de Conteúdo -->
-        <div class="main-grid">
-            <!-- Coluna Esquerda: Gráficos e Análise -->
-            <div class="content-left">
-                <!-- Gráfico de Produção por Cultura -->
-                <div class="panel-card">
-                    <div class="panel-header">
-                        <h3>Safra Nacional por Cultura Agrícola (Toneladas)</h3>
-                        <span class="panel-badge">Consolidado Distribuído</span>
+                <div class="topbar-actions">
+                    <div class="uptime-badge">
+                        <span class="badge-label">UPTIME</span>
+                        <span class="badge-value" id="uptime-val">0s</span>
                     </div>
-                    <div class="chart-wrapper">
-                        <canvas id="cropChart"></canvas>
+                    <button class="btn btn-outline" id="btn-reset">
+                        Reiniciar Estado
+                    </button>
+                    <button class="btn btn-primary" id="btn-dispatch">
+                        Executar Distribuição
+                    </button>
+                </div>
+            </header>
+
+            <div class="content-body">
+                <!-- ================= ABA 1: VISÃO GERAL ================= -->
+                <div class="tab-pane active" id="tab-overview">
+                    <!-- Faixa de KPIs Executivos -->
+                    <div class="kpi-grid">
+                        <div class="kpi-card">
+                            <span class="kpi-header">Fonte de Dados</span>
+                            <div class="kpi-main-value">IBGE SIDRA</div>
+                            <span class="kpi-caption">LSPA • Tabela 6588 Oficial</span>
+                        </div>
+                        <div class="kpi-card">
+                            <span class="kpi-header">Tarefas Despachadas</span>
+                            <div class="kpi-main-value" id="kpi-dispatched">0</div>
+                            <span class="kpi-caption">7 Culturas Particionadas</span>
+                        </div>
+                        <div class="kpi-card">
+                            <span class="kpi-header">Tarefas Processadas</span>
+                            <div class="kpi-main-value" id="kpi-completed">0</div>
+                            <span class="kpi-caption" id="kpi-progress">Progresso: 0%</span>
+                        </div>
+                        <div class="kpi-card">
+                            <span class="kpi-header">Concorrência Interna</span>
+                            <div class="kpi-main-value">4 Threads</div>
+                            <span class="kpi-caption">Pool Nativo por Worker</span>
+                        </div>
+                        <div class="kpi-card">
+                            <span class="kpi-header">Eficiência ESG Média</span>
+                            <div class="kpi-main-value" id="kpi-esg">--</div>
+                            <span class="kpi-caption">Intensificação Produtiva</span>
+                        </div>
+                    </div>
+
+                    <!-- Gráficos Principais -->
+                    <div class="charts-grid">
+                        <div class="content-card">
+                            <div class="card-header">
+                                <div>
+                                    <h3 class="card-title">Produção por Cultura Agrícola</h3>
+                                    <p class="card-subtitle">Volume estimado consolidado (Milhões de Toneladas)</p>
+                                </div>
+                                <span class="tag-status">AMQP Agregação</span>
+                            </div>
+                            <div class="chart-canvas-container">
+                                <canvas id="cropChart"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="content-card">
+                            <div class="card-header">
+                                <div>
+                                    <h3 class="card-title">Produtividade vs Indicador ESG</h3>
+                                    <p class="card-subtitle">Produtividade média (kg/ha) e score de sustentabilidade</p>
+                                </div>
+                                <span class="tag-status">Análise Concorrente</span>
+                            </div>
+                            <div class="chart-canvas-container">
+                                <canvas id="productivityChart"></canvas>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Gráfico de Produtividade vs ESG -->
-                <div class="panel-card">
-                    <div class="panel-header">
-                        <h3>Produtividade Média Nacional (kg/ha) & Classificação ESG</h3>
-                        <span class="panel-badge">Intensificação Produtiva</span>
+                <!-- ================= ABA 2: TOPOLOGIA DE NÓS ================= -->
+                <div class="tab-pane" id="tab-topology">
+                    <div class="section-desc-card">
+                        <h3>Topologia Distribuída Docker</h3>
+                        <p>O ecossistema opera de maneira desacoplada através do protocolo AMQP 0-9-1. O nó Manager coordena a ingestão e particionamento dos dados enquanto os nós de processamento competem de forma balanceada pelas tarefas (Competing Consumers).</p>
                     </div>
-                    <div class="chart-wrapper">
-                        <canvas id="productivityChart"></canvas>
+
+                    <div class="nodes-grid">
+                        <div class="node-box is-manager">
+                            <div class="node-box-header">
+                                <span class="node-role">COORDENADOR</span>
+                                <span class="node-status-dot online"></span>
+                            </div>
+                            <h4 class="node-title">agro-manager-coordenador</h4>
+                            <p class="node-detail">FastAPI • Ingestor SIDRA • Despachante AMQP</p>
+                            <div class="node-stats-table">
+                                <div class="stat-row"><span>Porta HTTP</span><span>8000</span></div>
+                                <div class="stat-row"><span>Status Ingestor</span><span style="color:#10b981;">Online</span></div>
+                                <div class="stat-row"><span>Ambiente</span><span>Docker Container</span></div>
+                            </div>
+                        </div>
+
+                        <div class="node-box is-broker">
+                            <div class="node-box-header">
+                                <span class="node-role">MIDDLEWARE</span>
+                                <span class="node-status-dot online"></span>
+                            </div>
+                            <h4 class="node-title">agro-broker-rabbitmq</h4>
+                            <p class="node-detail">Message Broker AMQP 0-9-1</p>
+                            <div class="node-stats-table">
+                                <div class="stat-row"><span>Porta AMQP</span><span>5672</span></div>
+                                <div class="stat-row"><span>Gestão Web</span><span>15672</span></div>
+                                <div class="stat-row"><span>Filas Duráveis</span><span>tasks / results</span></div>
+                            </div>
+                        </div>
+
+                        <div class="node-box is-worker">
+                            <div class="node-box-header">
+                                <span class="node-role">WORKER 1</span>
+                                <span class="node-status-dot online"></span>
+                            </div>
+                            <h4 class="node-title">agro-worker-alpha</h4>
+                            <p class="node-detail">ThreadPoolExecutor • Concorrência de 4 Threads</p>
+                            <div class="node-stats-table">
+                                <div class="stat-row"><span>Identificador</span><span>worker-alpha</span></div>
+                                <div class="stat-row"><span>Capacidade Pool</span><span>4 Threads</span></div>
+                                <div class="stat-row"><span>Tarefas Executadas</span><span id="topo-worker-alpha-jobs">0</span></div>
+                            </div>
+                        </div>
+
+                        <div class="node-box is-worker">
+                            <div class="node-box-header">
+                                <span class="node-role">WORKER 2</span>
+                                <span class="node-status-dot online"></span>
+                            </div>
+                            <h4 class="node-title">agro-worker-beta</h4>
+                            <p class="node-detail">ThreadPoolExecutor • Concorrência de 4 Threads</p>
+                            <div class="node-stats-table">
+                                <div class="stat-row"><span>Identificador</span><span>worker-beta</span></div>
+                                <div class="stat-row"><span>Capacidade Pool</span><span>4 Threads</span></div>
+                                <div class="stat-row"><span>Tarefas Executadas</span><span id="topo-worker-beta-jobs">0</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Lista de Workers Registrados -->
+                    <div class="content-card" style="margin-top: 1.5rem;">
+                        <div class="card-header">
+                            <h3 class="card-title">Nós de Processamento Conectados</h3>
+                            <span class="tag-status" id="registered-workers-badge">0 Ativos</span>
+                        </div>
+                        <div id="workers-list-container" class="workers-table-container">
+                            <p class="empty-text">Aguardando registro de respostas via RabbitMQ...</p>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Tabela de Auditoria do Paralelismo Interno dos Workers -->
-                <div class="panel-card">
-                    <div class="panel-header">
-                        <h3>Auditoria de Execução: Computação Distribuída & Threads</h3>
-                        <span class="panel-badge">Critério 3 da Rubrica</span>
-                    </div>
-                    <div class="table-container">
-                        <table class="audit-table">
-                            <thead>
-                                <tr>
-                                    <th>Cultura</th>
-                                    <th>Nó Executor</th>
-                                    <th>Threads Utilizadas</th>
-                                    <th>Tempo (ms)</th>
-                                    <th>Estado Líder</th>
-                                    <th>Score ESG</th>
-                                </tr>
-                            </thead>
-                            <tbody id="audit-table-body">
-                                <tr>
-                                    <td colspan="6" class="text-center empty-state">Nenhum processamento executado. Clique em "Iniciar Processamento Distribuído".</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Coluna Direita: Logs do Sistema e Workers Ativos -->
-            <div class="content-right">
-                <!-- Painel dos Workers Ativos -->
-                <div class="panel-card">
-                    <div class="panel-header">
-                        <h3>Nós Workers Conectados</h3>
-                        <span class="panel-badge" id="workers-count-badge">0 Ativos</span>
-                    </div>
-                    <div class="workers-list" id="workers-container">
-                        <div class="worker-item-empty">Aguardando registro dos Workers via RabbitMQ...</div>
+                <!-- ================= ABA 3: AUDITORIA DE THREADS ================= -->
+                <div class="tab-pane" id="tab-audit">
+                    <div class="content-card">
+                        <div class="card-header">
+                            <div>
+                                <h3 class="card-title">Auditoria Concorrente de Execução</h3>
+                                <p class="card-subtitle">Evidência de paralelismo interno: nós executores, identificadores de threads e tempos de cálculo</p>
+                            </div>
+                            <span class="tag-status">Rubrica - Critério 3</span>
+                        </div>
+                        <div class="data-table-wrapper">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Cultura Agrícola</th>
+                                        <th>Nó Executor</th>
+                                        <th>Concorrência Interna</th>
+                                        <th>Tempo de Execução</th>
+                                        <th>Estado Líder</th>
+                                        <th>Score ESG</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="audit-table-body">
+                                    <tr>
+                                        <td colspan="6" class="empty-text">Nenhuma execução registrada. Clique em "Executar Distribuição" no topo.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Terminal de Logs Distribuídos em Tempo Real -->
-                <div class="panel-card terminal-panel">
-                    <div class="panel-header">
-                        <h3>Logs do Ecossistema Distribuído</h3>
-                        <span class="terminal-indicator">● LIVE</span>
+                <!-- ================= ABA 4: CONSOLE DE LOGS ================= -->
+                <div class="tab-pane" id="tab-logs">
+                    <div class="content-card terminal-card">
+                        <div class="card-header terminal-header">
+                            <div>
+                                <h3 class="card-title" style="color: #e2e8f0;">Cluster Event Stream</h3>
+                                <p class="card-subtitle" style="color: #94a3b8;">Eventos de mensageria AMQP, ingestão SIDRA e confirmações de entrega</p>
+                            </div>
+                            <span class="terminal-live-badge">RECEIVING</span>
+                        </div>
+                        <div class="console-output" id="terminal-logs">
+                            <div class="log-line log-system">[SISTEMA] Console pronto. Conexão ativa com o coordenador.</div>
+                        </div>
                     </div>
-                    <div class="terminal-window" id="terminal-logs">
-                        <div class="log-line log-system">[SISTEMA] Aguardando comando de despacho de dados do LSPA...</div>
+                </div>
+
+                <!-- ================= ABA 5: RELATÓRIO ESG ================= -->
+                <div class="tab-pane" id="tab-esg">
+                    <div class="content-card">
+                        <div class="card-header">
+                            <div>
+                                <h3 class="card-title">Critério ESG: Intensificação Produtiva Sustentável</h3>
+                                <p class="card-subtitle">Análise da relação entre expansão da produção agrícola e ocupação de novas áreas</p>
+                            </div>
+                            <span class="tag-status">Alinhamento Temático</span>
+                        </div>
+                        <div class="esg-explainer-grid">
+                            <div class="esg-metric-card">
+                                <h4>Fórmula do Indicador</h4>
+                                <p class="code-formula">Produtividade = (Produção_kg) / (Área_ha)</p>
+                                <p class="explainer-p">Mede a quantidade colhida por unidade de terra, evidenciando o avanço tecnológico na lavoura.</p>
+                            </div>
+                            <div class="esg-metric-card">
+                                <h4>Critério de Preservação</h4>
+                                <p class="code-formula">Variação_Prod (%) > Variação_Área (%)</p>
+                                <p class="explainer-p">Premia culturas cuja colheita cresce sem demandar desmatamento ou expansão proporcional de terra.</p>
+                            </div>
+                        </div>
+                        <div class="esg-details-container" id="esg-details-container">
+                            <p class="empty-text">Execute o processamento para visualizar a decomposição do score ESG por cultura.</p>
+                        </div>
                     </div>
                 </div>
             </div>
