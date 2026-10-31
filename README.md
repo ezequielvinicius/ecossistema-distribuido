@@ -65,7 +65,7 @@ docker compose version
 
 ### 2. Clonar o Repositório
 ```bash
-git clone https://github.com/<SEU_USUARIO>/ecossistema-distribuido.git
+git clone https://github.com/ezequielvinicius/ecossistema-distribuido.git
 cd ecossistema-distribuido
 ```
 
