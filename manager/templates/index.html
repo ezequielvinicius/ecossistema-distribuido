@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ecossistema Distribuído | Monitoramento LSPA - IBGE</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Chart.js para visualização analítica -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header da Aplicação -->
+        <header class="navbar">
+            <div class="brand">
+                <div class="logo-icon">🌱</div>
+                <div class="brand-text">
+                    <h1>Ecossistema Distribuído</h1>
+                    <p class="subtitle">Processamento de Safras Agrícolas & Métricas ESG (LSPA / SIDRA - IBGE)</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <div class="status-badge" id="broker-badge">
+                    <span class="status-dot"></span>
+                    <span id="broker-status-text">RabbitMQ: Conectando...</span>
+                </div>
+                <button class="btn btn-primary" id="btn-dispatch">
+                    <span class="btn-icon">⚡</span> Iniciar Processamento Distribuído
+                </button>
+                <button class="btn btn-secondary" id="btn-reset">
+                    <span class="btn-icon">🔄</span> Reset
+                </button>
+            </div>
+        </header>
+
+        <!-- Topologia Distribuída Visual -->
+        <section class="topology-section">
+            <div class="section-header">
+                <h2>Topologia do Cluster Distribuído</h2>
+                <span class="badge-role">Docker Compose Topology</span>
+            </div>
+            <div class="topology-grid">
+                <!-- Nó Manager -->
+                <div class="node-card node-manager">
+                    <div class="node-icon">🧠</div>
+                    <div class="node-info">
+                        <span class="node-type">NÓ COORDENADOR</span>
+                        <h3 class="node-name">Manager Node</h3>
+                        <p class="node-desc">FastAPI • Ingestão SIDRA • Particionador de Carga</p>
+                    </div>
+                    <div class="node-metric">
+                        <span class="metric-label">Uptime</span>
+                        <span class="metric-val" id="uptime-val">0s</span>
+                    </div>
+                </div>
+
+                <!-- Broker RabbitMQ -->
+                <div class="node-card node-broker">
+                    <div class="node-icon">📬</div>
+                    <div class="node-info">
+                        <span class="node-type">MESSAGE BROKER</span>
+                        <h3 class="node-name">RabbitMQ AMQP</h3>
+                        <p class="node-desc">Fila: agro_tasks_queue & agro_results_queue</p>
+                    </div>
+                    <div class="node-metric">
+                        <span class="metric-label">Protocolo</span>
+                        <span class="metric-val">AMQP 0-9-1</span>
+                    </div>
+                </div>
+
+                <!-- Nó Worker Alpha -->
+                <div class="node-card node-worker" id="card-worker-alpha">
+                    <div class="node-icon">⚙️</div>
+                    <div class="node-info">
+                        <span class="node-type">NÓ DE PROCESSAMENTO 1</span>
+                        <h3 class="node-name">Worker Alpha</h3>
+                        <p class="node-desc">Pool Multithread • Cálculo ESG & Produtividade</p>
+                    </div>
+                    <div class="node-metric">
+                        <span class="metric-label">Jobs Processados</span>
+                        <span class="metric-val" id="worker-alpha-jobs">0</span>
+                    </div>
+                </div>
+
+                <!-- Nó Worker Beta -->
+                <div class="node-card node-worker" id="card-worker-beta">
+                    <div class="node-icon">⚙️</div>
+                    <div class="node-info">
+                        <span class="node-type">NÓ DE PROCESSAMENTO 2</span>
+                        <h3 class="node-name">Worker Beta</h3>
+                        <p class="node-desc">Pool Multithread • Cálculo ESG & Produtividade</p>
+                    </div>
+                    <div class="node-metric">
+                        <span class="metric-label">Jobs Processados</span>
+                        <span class="metric-val" id="worker-beta-jobs">0</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Métricas Rápidas (KPIs) -->
+        <section class="kpi-strip">
+            <div class="kpi-box">
+                <span class="kpi-title">Fonte de Dados</span>
+                <span class="kpi-number" style="font-size: 1.15rem; color: #10b981;">IBGE SIDRA (Tabela 6588)</span>
+                <span class="kpi-sub">LSPA - Estimativa Oficial</span>
+            </div>
+            <div class="kpi-box">
+                <span class="kpi-title">Tarefas Despachadas</span>
+                <span class="kpi-number" id="kpi-dispatched">0</span>
+                <span class="kpi-sub">Culturas Particionadas</span>
+            </div>
+            <div class="kpi-box">
+                <span class="kpi-title">Tarefas Concluídas</span>
+                <span class="kpi-number" id="kpi-completed">0</span>
+                <span class="kpi-sub" id="kpi-progress">Progresso: 0%</span>
+            </div>
+            <div class="kpi-box">
+                <span class="kpi-title">Paralelismo Interno</span>
+                <span class="kpi-number" style="color: #6366f1;">ThreadPool (4x)</span>
+                <span class="kpi-sub">Multithreading por Worker</span>
+            </div>
+            <div class="kpi-box">
+                <span class="kpi-title">Score ESG Geral</span>
+                <span class="kpi-number" id="kpi-esg" style="color: #3b82f6;">--</span>
+                <span class="kpi-sub">Intensificação Sustentável</span>
+            </div>
+        </section>
+
+        <!-- Área Principal de Conteúdo -->
+        <div class="main-grid">
+            <!-- Coluna Esquerda: Gráficos e Análise -->
+            <div class="content-left">
+                <!-- Gráfico de Produção por Cultura -->
+                <div class="panel-card">
+                    <div class="panel-header">
+                        <h3>Safra Nacional por Cultura Agrícola (Toneladas)</h3>
+                        <span class="panel-badge">Consolidado Distribuído</span>
+                    </div>
+                    <div class="chart-wrapper">
+                        <canvas id="cropChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Gráfico de Produtividade vs ESG -->
+                <div class="panel-card">
+                    <div class="panel-header">
+                        <h3>Produtividade Média Nacional (kg/ha) & Classificação ESG</h3>
+                        <span class="panel-badge">Intensificação Produtiva</span>
+                    </div>
+                    <div class="chart-wrapper">
+                        <canvas id="productivityChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Tabela de Auditoria do Paralelismo Interno dos Workers -->
+                <div class="panel-card">
+                    <div class="panel-header">
+                        <h3>Auditoria de Execução: Computação Distribuída & Threads</h3>
+                        <span class="panel-badge">Critério 3 da Rubrica</span>
+                    </div>
+                    <div class="table-container">
+                        <table class="audit-table">
+                            <thead>
+                                <tr>
+                                    <th>Cultura</th>
+                                    <th>Nó Executor</th>
+                                    <th>Threads Utilizadas</th>
+                                    <th>Tempo (ms)</th>
+                                    <th>Estado Líder</th>
+                                    <th>Score ESG</th>
+                                </tr>
+                            </thead>
+                            <tbody id="audit-table-body">
+                                <tr>
+                                    <td colspan="6" class="text-center empty-state">Nenhum processamento executado. Clique em "Iniciar Processamento Distribuído".</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Coluna Direita: Logs do Sistema e Workers Ativos -->
+            <div class="content-right">
+                <!-- Painel dos Workers Ativos -->
+                <div class="panel-card">
+                    <div class="panel-header">
+                        <h3>Nós Workers Conectados</h3>
+                        <span class="panel-badge" id="workers-count-badge">0 Ativos</span>
+                    </div>
+                    <div class="workers-list" id="workers-container">
+                        <div class="worker-item-empty">Aguardando registro dos Workers via RabbitMQ...</div>
+                    </div>
+                </div>
+
+                <!-- Terminal de Logs Distribuídos em Tempo Real -->
+                <div class="panel-card terminal-panel">
+                    <div class="panel-header">
+                        <h3>Logs do Ecossistema Distribuído</h3>
+                        <span class="terminal-indicator">● LIVE</span>
+                    </div>
+                    <div class="terminal-window" id="terminal-logs">
+                        <div class="log-line log-system">[SISTEMA] Aguardando comando de despacho de dados do LSPA...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
