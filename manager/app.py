@@ -120,11 +120,9 @@ templates = Jinja2Templates(directory=os.path.join(manager_dir, "templates"))
 async def serve_dashboard(request: Request):
     """Página inicial com Dashboard Web Completo para demonstração no Pitch."""
     return templates.TemplateResponse(
-        "index.html",
-        {
-            "request": request,
-            "title": "Ecossistema Distribuído - Agronegócio & ESG"
-        }
+        request=request,
+        name="index.html",
+        context={"title": "Ecossistema Distribuído - Agronegócio & ESG"}
     )
 
 @app.post("/api/jobs/dispatch")
