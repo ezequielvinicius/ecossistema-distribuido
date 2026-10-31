@@ -1,0 +1,94 @@
+version: "3.8"
+
+services:
+  # =========================================================================
+  # 1. MESSAGE BROKER DISTRIBUÍDO (RabbitMQ com AMQP e Painel de Gestão)
+  # =========================================================================
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: agro-broker-rabbitmq
+    hostname: rabbitmq
+    ports:
+      - "5672:5672"     # Porta do protocolo AMQP
+      - "15672:15672"   # Painel Web de Gestão do RabbitMQ (user: guest / pass: guest)
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
+      interval: 5s
+      timeout: 5s
+      retries: 8
+    networks:
+      - cluster_network
+
+  # =========================================================================
+  # 2. NÓ COORDENADOR (MANAGER)
+  # =========================================================================
+  manager:
+    build:
+      context: ./manager
+      dockerfile: Dockerfile
+    container_name: agro-manager-coordenador
+    ports:
+      - "8000:8000"     # Dashboard Web e API REST do Manager
+    environment:
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
+      - RABBITMQ_USER=guest
+      - RABBITMQ_PASS=guest
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - cluster_network
+
+  # =========================================================================
+  # 3. NÓ DE PROCESSAMENTO DISTRIBUÍDO 1 (WORKER ALPHA)
+  # =========================================================================
+  worker-alpha:
+    build:
+      context: ./worker
+      dockerfile: Dockerfile
+    container_name: agro-worker-alpha
+    environment:
+      - WORKER_ID=worker-alpha
+      - WORKER_THREADS=4
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
+      - RABBITMQ_USER=guest
+      - RABBITMQ_PASS=guest
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      manager:
+        condition: service_started
+    networks:
+      - cluster_network
+
+  # =========================================================================
+  # 4. NÓ DE PROCESSAMENTO DISTRIBUÍDO 2 (WORKER BETA)
+  # =========================================================================
+  worker-beta:
+    build:
+      context: ./worker
+      dockerfile: Dockerfile
+    container_name: agro-worker-beta
+    environment:
+      - WORKER_ID=worker-beta
+      - WORKER_THREADS=4
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
+      - RABBITMQ_USER=guest
+      - RABBITMQ_PASS=guest
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      manager:
+        condition: service_started
+    networks:
+      - cluster_network
+
+networks:
+  cluster_network:
+    driver: bridge
