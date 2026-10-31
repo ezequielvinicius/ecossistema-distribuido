@@ -168,11 +168,3 @@ ecossistema-distribuido/
 ```
 
 ---
-
-## 👥 Composição do Grupo
-* [Nome do Aluno 1] - [Matrícula]
-* [Nome do Aluno 2] - [Matrícula]
-* [Nome do Aluno 3] - [Matrícula]
-* [Nome do Aluno 4] - [Matrícula]
-* [Nome do Aluno 5] - [Matrícula]
-* [Nome do Aluno 6] - [Matrícula]
