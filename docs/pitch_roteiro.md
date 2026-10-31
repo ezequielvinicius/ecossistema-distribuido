@@ -2,7 +2,6 @@
 
 **Tema**: Ecossistema Distribuído para Processamento de Safras Agrícolas e Análise de Eficiência Sustentável (ESG)  
 **Fonte de Dados**: IBGE / SIDRA - Pesquisa LSPA (Levantamento Sistemático da Produção Agrícola, Tabela 6588)  
-**Integrantes do Grupo**: [Nome dos Integrantes]
 
 ---
 
